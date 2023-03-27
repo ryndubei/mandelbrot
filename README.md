@@ -9,6 +9,7 @@ Build
 First, install [GHCup](https://www.haskell.org/ghcup/), then
 
 ```
+sudo apt install freeglut3-dev
 cd mandelbrot
 stack build
 ```
