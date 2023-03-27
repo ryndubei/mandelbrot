@@ -42,17 +42,16 @@ handleInput (EventKey (MouseButton LeftButton) Down _ (x,y)) state = do
       { centre = centre state + ((realToFrac x :+ realToFrac (-y)) / fromIntegral (2^(zoom state + 1) :: Integer))
       , zoom = zoom state + 1
       }
-handleInput (EventKey (MouseButton RightButton) Down _ coords) state = do
+handleInput (EventKey (MouseButton RightButton) Down _ (x,y)) state = do
   when (isJust (updatingThread state)) $ do
     killThread (fromJust (updatingThread state))
   threadId <- forkIO $ updateMandelbrot state'
   pure state' {updatingThread = Just threadId}
   where 
     state' = state 
-      { centre = centre state - ((realToFrac x :+ realToFrac y) / fromIntegral (2^(zoom state - 1) :: Integer))
+      { centre = centre state - ((realToFrac x :+ realToFrac (-y)) / fromIntegral (2^zoom state :: Integer))
       , zoom = zoom state - 1
       }
-    (x,y) = coords
 handleInput (EventKey (Char 'z') Down _ _) state = do
   when (isJust (updatingThread state)) $ do
     killThread (fromJust (updatingThread state))
