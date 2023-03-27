@@ -1,6 +1,60 @@
+{-# LANGUAGE NamedFieldPuns #-}
 module Main (main) where
 
-import Lib
+import Graphics.Gloss.Interface.IO.Game
+import View
+import Codec.Picture.Types (PixelRGBA8(..), generateImage)
+import Data.Array ((!))
+import Graphics.Gloss.Juicy (fromImageRGBA8)
+import Data.Complex
+import Control.Concurrent (forkIO)
+
+windowWidth, windowHeight :: Int
+windowWidth = 800
+windowHeight = 800
+
+background :: Color
+background = black
+
+window :: Display
+window = InWindow "mandelbrot" (windowWidth, windowHeight) (0, 0)
+
+initialState :: MandelbrotView -> ViewerState
+initialState = ViewerState 50 6 0
 
 main :: IO ()
-main = someFunc
+main = do
+  mandelbrotView <- initialiseMandelbrot windowWidth windowHeight
+  let state = initialState mandelbrotView
+  updateMandelbrot state
+  playIO window background 10 state getMandelbrot handleInput (const pure)
+
+handleInput :: Event -> ViewerState -> IO ViewerState
+handleInput (EventKey (MouseButton LeftButton) Down _ (x,y)) state = do
+  _ <- forkIO $ updateMandelbrot state'
+  pure state'
+  where 
+    state' = state 
+      { centre = centre state + ((realToFrac x :+ realToFrac (-y)) / fromIntegral (2^(zoom state + 1) :: Integer))
+      , zoom = zoom state + 1
+      }
+handleInput (EventKey (MouseButton RightButton) Down _ coords) state = do
+  _ <- forkIO $ updateMandelbrot state'
+  pure state'
+  where 
+    state' = state 
+      { centre = centre state - ((realToFrac x :+ realToFrac y) / fromIntegral (2^(zoom state - 1) :: Integer))
+      , zoom = zoom state - 1
+      }
+    (x,y) = coords
+handleInput _ state = pure state
+
+getMandelbrot :: ViewerState -> IO Picture
+getMandelbrot ViewerState{mandelbrotView} = do
+  pixels <- getColours mandelbrotView
+  let image = generateImage (curry (colourToRGBA8 . (pixels !))) windowWidth windowHeight
+  pure (fromImageRGBA8 image)
+  where
+    colourToRGBA8 colour = let (r,g,b,a) = rgbaOfColor colour in PixelRGBA8 (round (r*255)) (round (g*255)) (round (b*255)) (round (a*255))
+
+

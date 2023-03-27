@@ -26,15 +26,18 @@ source-repository head
 library
   exposed-modules:
       Lib
+      View
   other-modules:
       Paths_mandelbrot
   hs-source-dirs:
       src
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
-      array
+      JuicyPixels
+    , array
     , base >=4.7 && <5
     , gloss
+    , gloss-juicy
   default-language: Haskell2010
 
 executable mandelbrot-exe
@@ -45,9 +48,11 @@ executable mandelbrot-exe
       app
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      array
+      JuicyPixels
+    , array
     , base >=4.7 && <5
     , gloss
+    , gloss-juicy
     , mandelbrot
   default-language: Haskell2010
 
@@ -60,8 +65,10 @@ test-suite mandelbrot-test
       test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      array
+      JuicyPixels
+    , array
     , base >=4.7 && <5
     , gloss
+    , gloss-juicy
     , mandelbrot
   default-language: Haskell2010
