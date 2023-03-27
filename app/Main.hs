@@ -53,6 +53,20 @@ handleInput (EventKey (MouseButton RightButton) Down _ coords) state = do
       , zoom = zoom state - 1
       }
     (x,y) = coords
+handleInput (EventKey (Char 'z') Down _ _) state = do
+  when (isJust (updatingThread state)) $ do
+    killThread (fromJust (updatingThread state))
+  threadId <- forkIO $ updateMandelbrot state'
+  pure state' {updatingThread = Just threadId}
+  where 
+    state' = state {iterations = iterations state + 1}
+handleInput (EventKey (Char 'x') Down _ _) state = do
+  when (isJust (updatingThread state)) $ do
+    killThread (fromJust (updatingThread state))
+  threadId <- forkIO $ updateMandelbrot state'
+  pure state' {updatingThread = Just threadId}
+  where 
+    state' = state {iterations = iterations state - 1}
 handleInput _ state = pure state
 
 getMandelbrot :: ViewerState -> IO Picture
