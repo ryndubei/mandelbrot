@@ -9,11 +9,13 @@ import Control.Monad (forM_)
 import Control.Exception (try, ArrayException)
 import Data.Array (Array)
 import Data.Array.IArray (amap)
+import Control.Concurrent (ThreadId)
 
 data ViewerState = ViewerState
   { iterations :: Integer
   , zoom :: Integer
   , centre :: Complex Double
+  , updatingThread :: Maybe ThreadId
   , mandelbrotView :: MandelbrotView
   }
 

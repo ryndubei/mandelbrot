@@ -7,7 +7,9 @@ import Codec.Picture.Types (PixelRGBA8(..), generateImage)
 import Data.Array ((!))
 import Graphics.Gloss.Juicy (fromImageRGBA8)
 import Data.Complex
-import Control.Concurrent (forkIO)
+import Control.Concurrent (forkIO, killThread)
+import Data.Maybe (fromJust, isJust)
+import Control.Monad (when)
 
 windowWidth, windowHeight :: Int
 windowWidth = 800
@@ -20,7 +22,7 @@ window :: Display
 window = InWindow "mandelbrot" (windowWidth, windowHeight) (0, 0)
 
 initialState :: MandelbrotView -> ViewerState
-initialState = ViewerState 50 6 0
+initialState = ViewerState 50 6 0 Nothing
 
 main :: IO ()
 main = do
@@ -31,16 +33,20 @@ main = do
 
 handleInput :: Event -> ViewerState -> IO ViewerState
 handleInput (EventKey (MouseButton LeftButton) Down _ (x,y)) state = do
-  _ <- forkIO $ updateMandelbrot state'
-  pure state'
+  when (isJust (updatingThread state)) $ do
+    killThread (fromJust (updatingThread state))
+  threadId <- forkIO $ updateMandelbrot state'
+  pure state' {updatingThread = Just threadId}
   where 
     state' = state 
       { centre = centre state + ((realToFrac x :+ realToFrac (-y)) / fromIntegral (2^(zoom state + 1) :: Integer))
       , zoom = zoom state + 1
       }
 handleInput (EventKey (MouseButton RightButton) Down _ coords) state = do
-  _ <- forkIO $ updateMandelbrot state'
-  pure state'
+  when (isJust (updatingThread state)) $ do
+    killThread (fromJust (updatingThread state))
+  threadId <- forkIO $ updateMandelbrot state'
+  pure state' {updatingThread = Just threadId}
   where 
     state' = state 
       { centre = centre state - ((realToFrac x :+ realToFrac y) / fromIntegral (2^(zoom state - 1) :: Integer))
