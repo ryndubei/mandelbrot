@@ -35,6 +35,7 @@ library
   build-depends:
       JuicyPixels
     , array
+    , async
     , base >=4.7 && <5
     , gloss
     , gloss-juicy
@@ -50,6 +51,7 @@ executable mandelbrot-exe
   build-depends:
       JuicyPixels
     , array
+    , async
     , base >=4.7 && <5
     , gloss
     , gloss-juicy
@@ -67,6 +69,7 @@ test-suite mandelbrot-test
   build-depends:
       JuicyPixels
     , array
+    , async
     , base >=4.7 && <5
     , gloss
     , gloss-juicy

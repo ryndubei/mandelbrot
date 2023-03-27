@@ -25,6 +25,7 @@ dependencies:
 - array
 - gloss-juicy
 - JuicyPixels
+- async
 
 ghc-options:
 - -Wall

@@ -29,7 +29,7 @@ main = do
   mandelbrotView <- initialiseMandelbrot windowWidth windowHeight
   let state = initialState mandelbrotView
   updateMandelbrot state
-  playIO window background 10 state getMandelbrot handleInput (const pure)
+  playIO window background 5 state getMandelbrot handleInput (const pure)
 
 handleInput :: Event -> ViewerState -> IO ViewerState
 handleInput (EventKey (MouseButton LeftButton) Down _ (x,y)) state = do
