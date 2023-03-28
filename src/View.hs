@@ -1,4 +1,4 @@
-module View (ViewerState(..), MandelbrotView, getColour, getColours, initialiseMandelbrot, updateMandelbrot) where
+module View (ViewerState(..), MandelbrotView, getColour, getColours, initialiseMandelbrot, updateMandelbrot, zoomImage) where
 import Data.Complex
 import Data.Array.IO.Safe (IOUArray)
 import Graphics.Gloss (Color, black, makeColor)
@@ -6,7 +6,7 @@ import qualified Data.Array.MArray as A
 import Lib (inMandelbrotSet)
 import Control.Monad (forM_)
 import Control.Exception (try, ArrayException)
-import Data.Array (Array)
+import Data.Array (Array, (!))
 import Data.Array.IArray (amap)
 import Control.Concurrent (getNumCapabilities)
 import Control.Concurrent.Async (forConcurrently_, Async)
@@ -52,15 +52,25 @@ updateMandelbrot state@ViewerState{mandelbrotView = MandelbrotView arr} = do
       widths = splits ((maxw-minw) `div` divisions) [minw..maxw]
       heights = splits ((maxh-minh) `div` divisions) [minh..maxh]
   forConcurrently_ [(xs,ys) | xs <- widths, ys <- heights] $ \(xs,ys) ->
-    forM_ xs $ \x ->
-      forM_ ys $ \y ->
-        let point = ((realToFrac (x - maxw `div` 2) :+ realToFrac (y - maxh `div` 2))
-                / fromIntegral (2^zoom state :: Integer))
-              + centre state
-            i = inMandelbrotSet (iterations state) point
-         in A.writeArray arr (x, y) i
+    forM_ [(x,y) | x <- xs, y <- ys] $ \(x,y) ->
+      let point = ((realToFrac (x - maxw `div` 2) :+ realToFrac (y - maxh `div` 2))
+              / fromIntegral (2^zoom state :: Integer))
+            + centre state
+          i = inMandelbrotSet (iterations state) point
+       in A.writeArray arr (x, y) i
   where
     splits :: Int -> [a] -> [[a]]
     splits n xs = case splitAt n xs of
       (ys, []) -> [ys]
       (ys, zs) -> ys : splits n zs
+
+-- Provides a twice-zoomed-in view of the current image
+-- while the new image is being calculated.
+zoomImage :: (Int,Int) -> ViewerState -> IO ()
+zoomImage (cornerX,cornerY) ViewerState{mandelbrotView = MandelbrotView arr} = do
+  ((minw,minh), (maxw,maxh)) <- A.getBounds arr
+  arr' <- A.freeze arr
+  forM_ [(x,y) | x <- [0..maxw-minw], y <- [0..maxh-minh]] $ \(x,y) ->
+    let x' = (x `div` 2) + minw + cornerX
+        y' = (y `div` 2) + minh + cornerY
+     in A.writeArray arr (x+minw,y+minh) (arr'!(x',y'))

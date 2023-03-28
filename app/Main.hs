@@ -22,7 +22,7 @@ window :: Display
 window = InWindow "mandelbrot" (windowWidth, windowHeight) (0, 0)
 
 initialState :: MandelbrotView -> ViewerState
-initialState = ViewerState 50 6 0 Nothing
+initialState = ViewerState 50 7 0 Nothing
 
 main :: IO ()
 main = do
@@ -35,6 +35,8 @@ handleInput :: Event -> ViewerState -> IO ViewerState
 handleInput (EventKey (MouseButton LeftButton) Down _ (x,y)) state = do
   when (isJust (updatingAsync state)) $ do
     cancel (fromJust (updatingAsync state))
+  let cornerIndex = (round (x/2) + (windowWidth `div` 4), round (-y/2) + (windowHeight `div` 4))
+  zoomImage cornerIndex state
   asyncId <- async $ updateMandelbrot state'
   pure state' {updatingAsync = Just asyncId}
   where 
