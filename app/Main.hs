@@ -69,11 +69,19 @@ handleInput (EventKey (Char 'x') Down _ _) state = do
 handleInput _ state = pure state
 
 getMandelbrot :: ViewerState -> IO Picture
-getMandelbrot ViewerState{mandelbrotView} = do
+getMandelbrot state@ViewerState{mandelbrotView} = do
   pixels <- getColours mandelbrotView
   let image = generateImage (curry (colourToRGBA8 . (pixels !))) windowWidth windowHeight
-  pure (fromImageRGBA8 image)
+  (pure . pictures) [fromImageRGBA8 image, infoText state]
   where
     colourToRGBA8 colour = let (r,g,b,a) = rgbaOfColor colour in PixelRGBA8 (round (r*255)) (round (g*255)) (round (b*255)) (round (a*255))
 
-
+infoText :: ViewerState -> Picture
+infoText state = pictures $ 
+  map (translate (realToFrac windowWidth / 5) (-realToFrac windowHeight / 3) . color blue) texts
+  where
+    texts = zipWith (\i t -> translate 0 (20*i) . scale 0.1 0.1 . text $ t) [0..]
+            [ "Iterations: " ++ show (iterations state)
+            , "Zoom: " ++ show (zoom state)
+            , "Centre: " ++ show (centre state)
+            ]
