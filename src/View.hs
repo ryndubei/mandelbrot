@@ -8,14 +8,14 @@ import Control.Monad (forM_)
 import Control.Exception (try, ArrayException)
 import Data.Array (Array)
 import Data.Array.IArray (amap)
-import Control.Concurrent (ThreadId, getNumCapabilities)
-import Control.Concurrent.Async (forConcurrently_)
+import Control.Concurrent (getNumCapabilities)
+import Control.Concurrent.Async (forConcurrently_, Async)
 
 data ViewerState = ViewerState
   { iterations :: Integer
   , zoom :: Integer
   , centre :: Complex Double
-  , updatingThread :: Maybe ThreadId
+  , updatingAsync :: Maybe (Async ())
   , mandelbrotView :: MandelbrotView
   }
 

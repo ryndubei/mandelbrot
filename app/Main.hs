@@ -7,7 +7,7 @@ import Codec.Picture.Types (PixelRGBA8(..), generateImage)
 import Data.Array ((!))
 import Graphics.Gloss.Juicy (fromImageRGBA8)
 import Data.Complex
-import Control.Concurrent (forkIO, killThread)
+import Control.Concurrent.Async (async, cancel)
 import Data.Maybe (fromJust, isJust)
 import Control.Monad (when)
 
@@ -33,37 +33,37 @@ main = do
 
 handleInput :: Event -> ViewerState -> IO ViewerState
 handleInput (EventKey (MouseButton LeftButton) Down _ (x,y)) state = do
-  when (isJust (updatingThread state)) $ do
-    killThread (fromJust (updatingThread state))
-  threadId <- forkIO $ updateMandelbrot state'
-  pure state' {updatingThread = Just threadId}
+  when (isJust (updatingAsync state)) $ do
+    cancel (fromJust (updatingAsync state))
+  asyncId <- async $ updateMandelbrot state'
+  pure state' {updatingAsync = Just asyncId}
   where 
     state' = state 
       { centre = centre state + ((realToFrac x :+ realToFrac (-y)) / fromIntegral (2^(zoom state + 1) :: Integer))
       , zoom = zoom state + 1
       }
 handleInput (EventKey (MouseButton RightButton) Down _ (x,y)) state = do
-  when (isJust (updatingThread state)) $ do
-    killThread (fromJust (updatingThread state))
-  threadId <- forkIO $ updateMandelbrot state'
-  pure state' {updatingThread = Just threadId}
+  when (isJust (updatingAsync state)) $ do
+    cancel (fromJust (updatingAsync state))
+  asyncId <- async $ updateMandelbrot state'
+  pure state' {updatingAsync = Just asyncId}
   where 
     state' = state 
       { centre = centre state - ((realToFrac x :+ realToFrac (-y)) / fromIntegral (2^zoom state :: Integer))
       , zoom = zoom state - 1
       }
 handleInput (EventKey (Char 'z') Down _ _) state = do
-  when (isJust (updatingThread state)) $ do
-    killThread (fromJust (updatingThread state))
-  threadId <- forkIO $ updateMandelbrot state'
-  pure state' {updatingThread = Just threadId}
+  when (isJust (updatingAsync state)) $ do
+    cancel (fromJust (updatingAsync state))
+  asyncId <- async $ updateMandelbrot state'
+  pure state' {updatingAsync = Just asyncId}
   where 
     state' = state {iterations = iterations state + 1}
 handleInput (EventKey (Char 'x') Down _ _) state = do
-  when (isJust (updatingThread state)) $ do
-    killThread (fromJust (updatingThread state))
-  threadId <- forkIO $ updateMandelbrot state'
-  pure state' {updatingThread = Just threadId}
+  when (isJust (updatingAsync state)) $ do
+    cancel (fromJust (updatingAsync state))
+  asyncId <- async $ updateMandelbrot state'
+  pure state' {updatingAsync = Just asyncId}
   where 
     state' = state {iterations = iterations state - 1}
 handleInput _ state = pure state
