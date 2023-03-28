@@ -20,3 +20,6 @@ Usage
 -----
 
 Use left click to zoom in and right click to zoom out.
+
+- 'z' : increase iterations by 1
+- 'x' : decrease iterations by 1
