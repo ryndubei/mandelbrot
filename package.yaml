@@ -37,6 +37,9 @@ ghc-options:
 - -Wmissing-home-modules
 - -Wpartial-fields
 - -Wredundant-constraints
+- -O2
+- -optc-O3
+- -optc-ffast-math
 
 library:
   source-dirs: src
